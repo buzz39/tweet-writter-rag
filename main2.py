@@ -1,4 +1,5 @@
 import os
+import pickle
 import dill
 import pandas as pd
 import redis
@@ -11,9 +12,9 @@ from langchain_community.callbacks import get_openai_callback
 directory = 'CSV_files'
 csv_files = [f for f in os.listdir(directory) if f.endswith('.csv')]
 
-embeddings = OpenAIEmbeddings(openai_api_key='sk-proj-toDqMmJ2seUy8StBzhWcT3BlbkFJyLYXEqlYJuXOcSMQQ5sx')
+embeddings = OpenAIEmbeddings(openai_api_key=os.environ['OPENAI_API_KEY'])
 vector_stores = {}
-r = redis.StrictRedis(host='tweets.redis.cache.windows.net', port=6380, password='VrEkrv27jjhu3XOX3qgiwWfvyvePp6MccAzCaK0T1O8=', ssl=True)
+r = redis.StrictRedis(host=os.environ['REDIS_HOST'], port=6380, password=os.environ['REDIS_PASSWORD'], ssl=True)
 
 for csv_file in csv_files:
     csv_file = os.path.join(directory, csv_file)
@@ -57,7 +58,7 @@ for csv_file, VectorStores in vector_stores.items():
     for doc in docs:
         print(doc)
 
-llm = openai.OpenAI(openai_api_key='sk-proj-toDqMmJ2seUy8StBzhWcT3BlbkFJyLYXEqlYJuXOcSMQQ5sx')
+llm = openai.OpenAI(openai_api_key=os.environ['OPENAI_API_KEY'])
 chain = load_qa_chain(llm=llm, chain_type="stuff")
 with get_openai_callback() as cb:
     response = chain.run(input_documents=docs, question=query)
